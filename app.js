@@ -37,11 +37,83 @@ bot.onText(/\/search (.+)/, async (msg, match) => {
       const result = await axios.default.get(link);
       const list = result.data.businesses;
 
-      for (let x = 0; x < list.length; x++) {}
-      const image = list[0].image_url;
-      const caption = `Food`;
+      for (let x = 0; x < list.length; x++) {
+        const name = list[x].name;
+        const image = list[x].image_url;
+        const is_closed = list[x].is_closed;
+        const review_count = list[x].review_count;
+        const categories = list[x].categories[0].title;
+        const rating = list[x].rating;
+        const price = list[x].price;
+        const location = list[x].location.display_address;
+        const phone = list[x].phone;
+        const distance = list[x].distance;
 
-      bot.sendPhoto(chatId, image, { caption: caption });
+        const captionObj = {
+          name: name,
+          image: image,
+          is_closed: is_closed,
+          review_count: review_count,
+          categories: categories,
+          rating: rating,
+          price: price,
+          location: location,
+          phone: phone,
+          distance: distance,
+        };
+
+        const caption = buildCaption(captionObj);
+        // const caption = `Food`;
+        bot.sendPhoto(chatId, image, { caption: caption });
+      }
     }
   });
 });
+
+function buildCaption(captionObj) {
+  const addressArr = captionObj.location;
+  let address = "";
+
+  for (let x = 0; x < addressArr.length; x++) {
+    address = address + addressArr[x] + ",\n";
+  }
+
+  let businessHours;
+  if (captionObj.is_closed === true) {
+    businessHours = "CLOSED";
+  } else {
+    businessHours = "OPEN";
+  }
+  let distance = captionObj.distance / 1000;
+  distance = Math.round(distance * 10) / 10;
+
+  const result =
+    "Name: " +
+    captionObj.name +
+    "\n\n" +
+    "Business: " +
+    businessHours +
+    "\n\n" +
+    "Categories: " +
+    captionObj.categories +
+    "\n\n" +
+    "Rating: " +
+    captionObj.rating +
+    " / 5 \n\n" +
+    "Review Count: " +
+    captionObj.review_count +
+    "\n\n" +
+    "Price: " +
+    captionObj.price +
+    "\n\n" +
+    "Contact Number: " +
+    captionObj.phone +
+    "\n\n" +
+    "Distance: " +
+    distance +
+    " KM\n\n" +
+    "------  Address  ------\n\n" +
+    address;
+
+  return result;
+}
